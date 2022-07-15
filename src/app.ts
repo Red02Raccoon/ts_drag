@@ -1,5 +1,56 @@
 // classes are used for educational purposes;
 
+interface FormValues {
+  title: string;
+  description: string;
+  people: number;
+}
+
+interface FieldValidation {
+  required?: boolean;
+  min?: number;
+  max?: number;
+}
+
+interface FormValidation {
+  [prop: string]: FieldValidation;
+}
+
+// utils
+const validation = (values: FormValues, rules: FormValidation): boolean => {
+  let isValid = true;
+
+  const data = Object.entries(values || {});
+
+  if (!data) {
+    return false;
+  }
+
+  data.forEach(([key, value]) => {
+    const currentRules = rules[key];
+
+    if (!currentRules) {
+      return;
+    }
+
+    const { required, min, max } = currentRules;
+
+    if (required) {
+      isValid = isValid && value.toString().trim().length !== 0;
+    }
+
+    if (min != null && typeof value === "number") {
+      isValid = isValid && value >= min;
+    }
+
+    if (max != null && typeof value === "number") {
+      isValid = isValid && value <= max;
+    }
+  });
+
+  return isValid;
+};
+
 // decorators
 const autobind = (_: any, _2: string, descriptor: PropertyDescriptor) => {
   const originalMethod = descriptor.value;
@@ -21,6 +72,20 @@ class ProjectForm {
   titleInput: HTMLInputElement;
   descriptionInput: HTMLInputElement;
   peopleInput: HTMLInputElement;
+
+  static validationRules = {
+    title: {
+      required: true,
+    },
+    description: {
+      required: true,
+    },
+    people: {
+      required: true,
+      min: 1,
+      max: 7,
+    },
+  };
 
   constructor() {
     this.formTemplate = document.getElementById(
@@ -51,10 +116,13 @@ class ProjectForm {
     const description = this.descriptionInput.value.trim();
     const people = +this.peopleInput.value;
 
-    if (!title || !description || !people) {
-      alert("Data is invalid, please check fields!");
+    if (
+      !validation({ title, description, people }, ProjectForm.validationRules)
+    ) {
+      alert("Error: Data is invalid, please check fields!");
       return;
     }
+
     return [title, description, people];
   }
 
@@ -64,11 +132,10 @@ class ProjectForm {
 
     const info = this.getFormInfo();
 
-    if(Array.isArray(info)) {
-        console.log({ info });
+    if (Array.isArray(info)) {
+      console.log({ info });
+      this.form.reset();
     }
-
-    this.form.reset();
   }
 
   private configureForm() {
