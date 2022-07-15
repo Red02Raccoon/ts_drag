@@ -1,11 +1,7 @@
 // classes are used for educational purposes;
 
 // decorators
-const autobind = (
-  _: any,
-  _2: string,
-  descriptor: PropertyDescriptor
-) => {
+const autobind = (_: any, _2: string, descriptor: PropertyDescriptor) => {
   const originalMethod = descriptor.value;
   const adjDescriptor = {
     configurable: true,
@@ -50,11 +46,29 @@ class ProjectForm {
     this.rootElement.insertAdjacentElement("afterbegin", this.form);
   }
 
+  private getFormInfo(): [string, string, number] | void {
+    const title = this.titleInput.value.trim();
+    const description = this.descriptionInput.value.trim();
+    const people = +this.peopleInput.value;
+
+    if (!title || !description || !people) {
+      alert("Data is invalid, please check fields!");
+      return;
+    }
+    return [title, description, people];
+  }
+
   @autobind
   private handleSubmit(e: Event) {
     e.preventDefault();
 
-    console.log(e);
+    const info = this.getFormInfo();
+
+    if(Array.isArray(info)) {
+        console.log({ info });
+    }
+
+    this.form.reset();
   }
 
   private configureForm() {
