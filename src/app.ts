@@ -271,6 +271,7 @@ class ProjectList
   dragOverHandler(event: DragEvent) {
     if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
       event.preventDefault();
+
       this.element.classList.add("droppable");
     }
   }
@@ -280,6 +281,8 @@ class ProjectList
     const prjId = event.dataTransfer!.getData("text/plain");
 
     projectState.moveProject(prjId, this.type);
+
+    this.element.classList.remove("droppable");
   }
 
   @autobind
