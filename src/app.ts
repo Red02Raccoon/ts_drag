@@ -271,8 +271,7 @@ class ProjectList
   dragOverHandler(event: DragEvent) {
     if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
       event.preventDefault();
-      const listEl = this.element.querySelector("ul")!;
-      listEl.classList.add("droppable");
+      this.element.classList.add("droppable");
     }
   }
 
@@ -285,8 +284,7 @@ class ProjectList
 
   @autobind
   dragLeaveHandler(_: DragEvent) {
-    const listEl = this.element.querySelector("ul")!;
-    listEl.classList.remove("droppable");
+    this.element.classList.remove("droppable");
   }
 
   configure() {
