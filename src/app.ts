@@ -137,30 +137,52 @@ class ProjectState {
 const projectState = ProjectState.getInstance();
 console.log({ projectState });
 
-class ProjectList {
+abstract class Component<P extends HTMLElement, E extends HTMLElement> {
   template: HTMLTemplateElement;
-  rootElement: HTMLDivElement;
-  element: HTMLElement;
+  parentElement: P;
+  element: E;
 
+  constructor(
+    templateId: string,
+    parentId: string,
+    position: InsertPosition,
+    newElementId?: string
+  ) {
+    this.template = document.getElementById(templateId) as HTMLTemplateElement;
+    this.parentElement = document.getElementById(parentId) as P;
+
+    this.element = document.importNode(this.template.content, true)
+      .firstElementChild as E;
+
+    if (newElementId) {
+      this.element.id = newElementId;
+    }
+
+    this.render(position);
+  }
+
+  private render(position: InsertPosition) {
+    this.parentElement.insertAdjacentElement(position, this.element);
+  }
+
+  abstract configure(): void;
+  abstract prepareContent(): void;
+}
+
+class ProjectList extends Component<HTMLDivElement, HTMLElement> {
   listId: string;
   projects: ProjectEntity[] = [];
 
   constructor(private type: ProjectType.active | ProjectType.finished) {
-    this.listId = `${this.type}-project-list`;
-    this.template = document.getElementById(
-      "project-list"
-    ) as HTMLTemplateElement;
-    this.rootElement = document.getElementById("app") as HTMLDivElement;
+    super("project-list", "app", "beforeend", `${type}-projects`);
 
-    this.element = document.importNode(this.template.content, true)
-      .firstElementChild as HTMLElement;
+    this.listId = `${type}-project-list`;
 
     this.prepareContent();
-    this.render();
-    this.subscribe();
+    this.configure();
   }
 
-  private subscribe() {
+  configure() {
     projectState.addListener((projects: Project[]) => {
       this.projects = projects.filter((item) => item.status === this.type);
 
@@ -183,25 +205,16 @@ class ProjectList {
     });
   }
 
-  private prepareContent() {
-    this.element.id = `${this.type}-projects`;
+  prepareContent() {
     this.element.querySelector("ul")!.id = this.listId;
 
     this.element.querySelector(
       "h2"
     )!.textContent = `${this.type.toUpperCase()} PROJECTS`;
   }
-
-  private render() {
-    this.rootElement.insertAdjacentElement("beforeend", this.element);
-  }
 }
 
-class ProjectForm {
-  formTemplate: HTMLTemplateElement;
-  rootElement: HTMLDivElement;
-  form: HTMLFormElement;
-
+class ProjectForm extends Component<HTMLDivElement, HTMLFormElement> {
   titleInput: HTMLInputElement;
   descriptionInput: HTMLInputElement;
   peopleInput: HTMLInputElement;
@@ -221,27 +234,17 @@ class ProjectForm {
   };
 
   constructor() {
-    this.formTemplate = document.getElementById(
-      "project-input"
-    ) as HTMLTemplateElement;
-    this.rootElement = document.getElementById("app") as HTMLDivElement;
+    super("project-input", "app", "afterbegin", "user-input");
 
-    this.form = document.importNode(this.formTemplate.content, true)
-      .firstElementChild as HTMLFormElement;
-    this.form.id = "user-input";
-
-    this.titleInput = this.form.querySelector("#title") as HTMLInputElement;
-    this.descriptionInput = this.form.querySelector(
+    this.titleInput = this.element.querySelector("#title") as HTMLInputElement;
+    this.descriptionInput = this.element.querySelector(
       "#description"
     ) as HTMLInputElement;
-    this.peopleInput = this.form.querySelector("#people") as HTMLInputElement;
+    this.peopleInput = this.element.querySelector(
+      "#people"
+    ) as HTMLInputElement;
 
-    this.configureForm();
-    this.render();
-  }
-
-  private render() {
-    this.rootElement.insertAdjacentElement("afterbegin", this.form);
+    this.configure();
   }
 
   private getFormInfo(): ProjectInfo | void {
@@ -268,14 +271,16 @@ class ProjectForm {
     if (project) {
       projectState.addProject(project);
 
-      this.form.reset();
+      this.element.reset();
     }
   }
 
-  private configureForm() {
+  prepareContent() {}
+
+  configure() {
     // bind or descriptor
     // this.form.addEventListener("submit", this.handleSubmit.bind(this));
-    this.form.addEventListener("submit", this.handleSubmit);
+    this.element.addEventListener("submit", this.handleSubmit);
   }
 }
 
