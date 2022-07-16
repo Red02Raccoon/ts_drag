@@ -177,6 +177,16 @@ abstract class Component<P extends HTMLElement, E extends HTMLElement> {
 class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
   private project: Project;
 
+  get people() {
+    const { people } = this.project;
+
+    if (people === 1) {
+      return "1 Person";
+    }
+
+    return `${people} Persons`;
+  }
+
   constructor(parentId: string, project: Project) {
     super("single-project", parentId, "beforeend", project.id);
 
@@ -186,10 +196,12 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
   }
 
   prepareContent(): void {
-    const { title, description, people } = this.project;
+    const { title, description } = this.project;
 
     this.element.querySelector("h2")!.textContent = title;
-    this.element.querySelector("h3")!.textContent = people.toString();
+    this.element.querySelector(
+      "h3"
+    )!.textContent = `${this.people.toString()} assigned`;
     this.element.querySelector("p")!.textContent = description;
   }
 
