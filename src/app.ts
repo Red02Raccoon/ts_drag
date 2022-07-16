@@ -1,5 +1,21 @@
 // classes are used for educational purposes;
 
+enum ProjectType {
+  active = "active",
+  finished = "finished",
+}
+
+interface ProjectInfo {
+  title: string;
+  description: string;
+  people: number;
+}
+
+interface ProjectEntity extends ProjectInfo {
+  id: string;
+  status: ProjectType.active | ProjectType.finished;
+}
+
 interface FormValues {
   title: string;
   description: string;
@@ -64,6 +80,123 @@ const autobind = (_: any, _2: string, descriptor: PropertyDescriptor) => {
   return adjDescriptor;
 };
 
+// Classes
+class Project implements ProjectEntity {
+  id: string;
+  title: string;
+  description: string;
+  people: number;
+  status: ProjectType.active | ProjectType.finished;
+
+  constructor({ id, title, description, people, status }: ProjectEntity) {
+    this.id = id;
+    this.title = title;
+    this.description = description;
+    this.people = people;
+    this.status = status;
+  }
+}
+
+type Listener = (items: Project[]) => void;
+
+class ProjectState {
+  private static instance: ProjectState;
+
+  private listeners: Listener[] = [];
+  private projects: ProjectEntity[] = [];
+
+  private constructor() {}
+
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new ProjectState();
+    }
+
+    return this.instance;
+  }
+
+  addListener(listener: Listener) {
+    this.listeners.push(listener);
+  }
+
+  addProject(project: ProjectInfo) {
+    const newProject = new Project({
+      ...project,
+      id: Math.random().toString(),
+      status: ProjectType.active,
+    });
+
+    this.projects.push(newProject);
+
+    this.listeners.forEach((listener) => {
+      listener(this.projects);
+    });
+  }
+}
+
+const projectState = ProjectState.getInstance();
+console.log({ projectState });
+
+class ProjectList {
+  template: HTMLTemplateElement;
+  rootElement: HTMLDivElement;
+  element: HTMLElement;
+
+  listId: string;
+  projects: ProjectEntity[] = [];
+
+  constructor(private type: ProjectType.active | ProjectType.finished) {
+    this.listId = `${this.type}-project-list`;
+    this.template = document.getElementById(
+      "project-list"
+    ) as HTMLTemplateElement;
+    this.rootElement = document.getElementById("app") as HTMLDivElement;
+
+    this.element = document.importNode(this.template.content, true)
+      .firstElementChild as HTMLElement;
+
+    this.prepareContent();
+    this.render();
+    this.subscribe();
+  }
+
+  private subscribe() {
+    projectState.addListener((projects: Project[]) => {
+      this.projects = projects.filter((item) => item.status === this.type);
+
+      this.renderProjects();
+    });
+  }
+
+  private renderProjects() {
+    const list = this.element.querySelector(
+      `#${this.listId}`
+    ) as HTMLUListElement;
+
+    list.innerHTML = "";
+
+    this.projects.forEach((project: ProjectEntity) => {
+      const item = document.createElement("li");
+      item.textContent = project.title;
+
+      list.appendChild(item);
+    });
+  }
+
+  private prepareContent() {
+    this.element.id = `${this.type}-projects`;
+    this.element.querySelector("ul")!.id = this.listId;
+
+    this.element.querySelector(
+      "h2"
+    )!.textContent = `${this.type.toUpperCase()} PROJECTS`;
+  }
+
+  private render() {
+    this.rootElement.insertAdjacentElement("beforeend", this.element);
+  }
+}
+
 class ProjectForm {
   formTemplate: HTMLTemplateElement;
   rootElement: HTMLDivElement;
@@ -111,7 +244,7 @@ class ProjectForm {
     this.rootElement.insertAdjacentElement("afterbegin", this.form);
   }
 
-  private getFormInfo(): [string, string, number] | void {
+  private getFormInfo(): ProjectInfo | void {
     const title = this.titleInput.value.trim();
     const description = this.descriptionInput.value.trim();
     const people = +this.peopleInput.value;
@@ -123,17 +256,18 @@ class ProjectForm {
       return;
     }
 
-    return [title, description, people];
+    return { title, description, people };
   }
 
   @autobind
   private handleSubmit(e: Event) {
     e.preventDefault();
 
-    const info = this.getFormInfo();
+    const project = this.getFormInfo();
 
-    if (Array.isArray(info)) {
-      console.log({ info });
+    if (project) {
+      projectState.addProject(project);
+
       this.form.reset();
     }
   }
@@ -146,3 +280,6 @@ class ProjectForm {
 }
 
 const projectForm = new ProjectForm();
+
+const activeProjectList = new ProjectList(ProjectType.active);
+const finishedProjectList = new ProjectList(ProjectType.finished);
