@@ -13,7 +13,7 @@ interface ProjectInfo {
 
 interface ProjectEntity extends ProjectInfo {
   id: string;
-  status: ProjectType.active | ProjectType.finished;
+  status: ProjectType;
 }
 
 interface FormValues {
@@ -97,7 +97,7 @@ class Project implements ProjectEntity {
   title: string;
   description: string;
   people: number;
-  status: ProjectType.active | ProjectType.finished;
+  status: ProjectType;
 
   constructor({ id, title, description, people, status }: ProjectEntity) {
     this.id = id;
@@ -258,7 +258,7 @@ class ProjectList
   listId: string;
   projects: ProjectEntity[] = [];
 
-  constructor(private type: ProjectType.active | ProjectType.finished) {
+  constructor(private type: ProjectType) {
     super("project-list", "app", "beforeend", `${type}-projects`);
 
     this.listId = `${type}-project-list`;
