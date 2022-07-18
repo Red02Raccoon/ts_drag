@@ -1,9 +1,9 @@
 // classes are used for educational purposes;
 
-import { ProjectForm } from "./components/project-form.js";
-import { ProjectList } from "./components/project-list.js";
-import { ProjectType } from "./models/project.js";
-import { projectState } from "./state/projects.js";
+import { ProjectForm } from "./components/project-form";
+import { ProjectList } from "./components/project-list";
+import { ProjectType } from "./models/project";
+import { projectState } from "./state/projects";
 
 const projectForm = new ProjectForm();
 
