@@ -1,5 +1,6 @@
 export enum ProjectType {
   active = "active",
+  inprogress = "inprogress",
   finished = "finished",
 }
 
