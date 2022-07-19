@@ -1,52 +1,49 @@
 interface FormValues {
-  title: string;
-  description: string;
-  people: number;
+    title: string;
+    description: string;
+    people: number;
 }
 
 interface FieldValidation {
-  required?: boolean;
-  min?: number;
-  max?: number;
+    required?: boolean;
+    min?: number;
+    max?: number;
 }
 
 interface FormValidation {
-  [prop: string]: FieldValidation;
+    [prop: string]: FieldValidation;
 }
 
-export const validation = (
-  values: FormValues,
-  rules: FormValidation
-): boolean => {
-  let isValid = true;
+export const validation = (values: FormValues, rules: FormValidation): boolean => {
+    let isValid = true;
 
-  const data = Object.entries(values || {});
+    const data = Object.entries(values || {});
 
-  if (!data) {
-    return false;
-  }
-
-  data.forEach(([key, value]) => {
-    const currentRules = rules[key];
-
-    if (!currentRules) {
-      return;
+    if (!data) {
+        return false;
     }
 
-    const { required, min, max } = currentRules;
+    data.forEach(([key, value]) => {
+        const currentRules = rules[key];
 
-    if (required) {
-      isValid = isValid && value.toString().trim().length !== 0;
-    }
+        if (!currentRules) {
+            return;
+        }
 
-    if (min != null && typeof value === "number") {
-      isValid = isValid && value >= min;
-    }
+        const { required, min, max } = currentRules;
 
-    if (max != null && typeof value === "number") {
-      isValid = isValid && value <= max;
-    }
-  });
+        if (required) {
+            isValid = isValid && value.toString().trim().length !== 0;
+        }
 
-  return isValid;
+        if (min != null && typeof value === 'number') {
+            isValid = isValid && value >= min;
+        }
+
+        if (max != null && typeof value === 'number') {
+            isValid = isValid && value <= max;
+        }
+    });
+
+    return isValid;
 };

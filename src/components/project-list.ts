@@ -1,76 +1,69 @@
-import { autobind } from "../decorators/autobind";
-import { DragTarget } from "../models/draggable";
-import { ProjectEntity, ProjectType, Project } from "../models/project";
-import { projectState } from "../state/projects";
-import { Component } from "./base-component";
-import { ProjectItem } from "./project-item";
+import { autobind } from '../decorators/autobind';
+import { DragTarget } from '../models/draggable';
+import { ProjectEntity, ProjectType, Project } from '../models/project';
+import { projectState } from '../state/projects';
+import { Component } from './base-component';
+import { ProjectItem } from './project-item';
 
-export class ProjectList
-  extends Component<HTMLDivElement, HTMLElement>
-  implements DragTarget
-{
-  listId: string;
-  projects: ProjectEntity[] = [];
+export class ProjectList extends Component<HTMLDivElement, HTMLElement> implements DragTarget {
+    listId: string;
+    projects: ProjectEntity[] = [];
 
-  constructor(private type: ProjectType) {
-    super("project-list", "app", "beforeend", `${type}-projects`);
+    constructor(private type: ProjectType) {
+        super('project-list', 'app', 'beforeend', `${type}-projects`);
 
-    this.listId = `${type}-project-list`;
+        this.listId = `${type}-project-list`;
 
-    this.prepareContent();
-    this.configure();
-  }
-
-  @autobind
-  dragOverHandler(event: DragEvent) {
-    if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
-      event.preventDefault();
-      this.element.classList.add("droppable");
+        this.prepareContent();
+        this.configure();
     }
-  }
 
-  @autobind
-  dropHandler(event: DragEvent) {
-    const prjId = event.dataTransfer!.getData("text/plain");
+    @autobind
+    dragOverHandler(event: DragEvent) {
+        if (event.dataTransfer && event.dataTransfer.types[0] === 'text/plain') {
+            event.preventDefault();
+            this.element.classList.add('droppable');
+        }
+    }
 
-    projectState.moveProject(prjId, this.type);
-    this.element.classList.remove("droppable");
-  }
+    @autobind
+    dropHandler(event: DragEvent) {
+        const prjId = event.dataTransfer!.getData('text/plain');
 
-  @autobind
-  dragLeaveHandler(_: DragEvent) {
-    this.element.classList.remove("droppable");
-  }
+        projectState.moveProject(prjId, this.type);
+        this.element.classList.remove('droppable');
+    }
 
-  configure() {
-    this.element.addEventListener("dragover", this.dragOverHandler);
-    this.element.addEventListener("drop", this.dropHandler);
-    this.element.addEventListener("dragleave", this.dragLeaveHandler);
+    @autobind
+    dragLeaveHandler(_: DragEvent) {
+        this.element.classList.remove('droppable');
+    }
 
-    projectState.addListener((projects: Project[]) => {
-      this.projects = projects.filter((item) => item.status === this.type);
+    configure() {
+        this.element.addEventListener('dragover', this.dragOverHandler);
+        this.element.addEventListener('drop', this.dropHandler);
+        this.element.addEventListener('dragleave', this.dragLeaveHandler);
 
-      this.renderProjects();
-    });
-  }
+        projectState.addListener((projects: Project[]) => {
+            this.projects = projects.filter(item => item.status === this.type);
 
-  private renderProjects() {
-    const list = this.element.querySelector(
-      `#${this.listId}`
-    ) as HTMLUListElement;
+            this.renderProjects();
+        });
+    }
 
-    list.innerHTML = "";
+    private renderProjects() {
+        const list = this.element.querySelector(`#${this.listId}`) as HTMLUListElement;
 
-    this.projects.forEach((project: ProjectEntity) => {
-      new ProjectItem(this.listId, project);
-    });
-  }
+        list.innerHTML = '';
 
-  prepareContent() {
-    this.element.querySelector("ul")!.id = this.listId;
+        this.projects.forEach((project: ProjectEntity) => {
+            new ProjectItem(this.listId, project);
+        });
+    }
 
-    this.element.querySelector(
-      "h2"
-    )!.textContent = `${this.type.toUpperCase()} PROJECTS`;
-  }
+    prepareContent() {
+        this.element.querySelector('ul')!.id = this.listId;
+
+        this.element.querySelector('h2')!.textContent = `${this.type.toUpperCase()} PROJECTS`;
+    }
 }

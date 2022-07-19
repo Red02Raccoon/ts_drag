@@ -1,75 +1,69 @@
-import { validation } from "../utils/validation";
-import { autobind } from "../decorators/autobind";
-import { ProjectInfo } from "../models/project";
-import { projectState } from "../state/projects";
-import { Component } from "./base-component";
+import { validation } from '../utils/validation';
+import { autobind } from '../decorators/autobind';
+import { ProjectInfo } from '../models/project';
+import { projectState } from '../state/projects';
+import { Component } from './base-component';
 
 export class ProjectForm extends Component<HTMLDivElement, HTMLFormElement> {
-  titleInput: HTMLInputElement;
-  descriptionInput: HTMLInputElement;
-  peopleInput: HTMLInputElement;
+    titleInput: HTMLInputElement;
+    descriptionInput: HTMLInputElement;
+    peopleInput: HTMLInputElement;
 
-  static validationRules = {
-    title: {
-      required: true,
-    },
-    description: {
-      required: true,
-    },
-    people: {
-      required: true,
-      min: 1,
-      max: 7,
-    },
-  };
+    static validationRules = {
+        title: {
+            required: true,
+        },
+        description: {
+            required: true,
+        },
+        people: {
+            required: true,
+            min: 1,
+            max: 7,
+        },
+    };
 
-  constructor() {
-    super("project-input", "app", "afterbegin", "user-input");
+    constructor() {
+        super('project-input', 'app', 'afterbegin', 'user-input');
 
-    this.titleInput = this.element.querySelector("#title") as HTMLInputElement;
-    this.descriptionInput = this.element.querySelector(
-      "#description"
-    ) as HTMLInputElement;
-    this.peopleInput = this.element.querySelector(
-      "#people"
-    ) as HTMLInputElement;
+        this.titleInput = this.element.querySelector('#title') as HTMLInputElement;
+        this.descriptionInput = this.element.querySelector('#description') as HTMLInputElement;
+        this.peopleInput = this.element.querySelector('#people') as HTMLInputElement;
 
-    this.configure();
-  }
-
-  private getFormInfo(): ProjectInfo | void {
-    const title = this.titleInput.value.trim();
-    const description = this.descriptionInput.value.trim();
-    const people = +this.peopleInput.value;
-
-    if (
-      !validation({ title, description, people }, ProjectForm.validationRules)
-    ) {
-      alert("Error: Data is invalid, please check fields!");
-      return;
+        this.configure();
     }
 
-    return { title, description, people };
-  }
+    private getFormInfo(): ProjectInfo | void {
+        const title = this.titleInput.value.trim();
+        const description = this.descriptionInput.value.trim();
+        const people = +this.peopleInput.value;
 
-  @autobind
-  private handleSubmit(e: Event) {
-    e.preventDefault();
+        if (!validation({ title, description, people }, ProjectForm.validationRules)) {
+            alert('Error: Data is invalid, please check fields!');
+            return;
+        }
 
-    const project = this.getFormInfo();
-
-    if (project) {
-      projectState.addProject(project);
-
-      this.element.reset();
+        return { title, description, people };
     }
-  }
 
-  prepareContent() {}
+    @autobind
+    private handleSubmit(e: Event) {
+        e.preventDefault();
 
-  configure() {
-    // bind or descriptor
-    // this.form.addEventListener("submit", this.handleSubmit.bind(this));
-    this.element.addEventListener("submit", this.handleSubmit);
-  }
+        const project = this.getFormInfo();
+
+        if (project) {
+            projectState.addProject(project);
+
+            this.element.reset();
+        }
+    }
+
+    prepareContent() {}
+
+    configure() {
+        // bind or descriptor
+        // this.form.addEventListener("submit", this.handleSubmit.bind(this));
+        this.element.addEventListener('submit', this.handleSubmit);
+    }
 }
